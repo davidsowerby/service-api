@@ -46,7 +46,7 @@ sourceCompatibility = '1.8'
 
 
 kaytee {
-    baseVersion = "0.9.0.0"
+    baseVersion = "0.9.0.1"
     generateChangeLog=false
 
 }
