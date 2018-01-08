@@ -14,15 +14,14 @@
 package uk.q3c.krail.service
 
 import com.google.inject.Inject
-import net.engio.mbassy.bus.common.PubSubSupport
 import spock.lang.Specification
-import uk.q3c.krail.eventbus.GlobalBusProvider
+import uk.q3c.krail.eventbus.MessageBus
+import uk.q3c.krail.eventbus.MessageBusProvider
 import uk.q3c.krail.i18n.I18NKey
 import uk.q3c.krail.i18n.Translate
 
 import static uk.q3c.krail.service.RelatedServiceExecutor.*
 import static uk.q3c.krail.service.Service.*
-
 /**
  * Created by David Sowerby on 08/11/15.
  *
@@ -35,8 +34,8 @@ class AbstractServiceTest extends Specification {
     TestService service
 
     def servicesModel = Mock(ServiceModel)
-    GlobalBusProvider globalBusProvider = Mock(GlobalBusProvider)
-    def eventBus = Mock(PubSubSupport)
+    MessageBusProvider globalBusProvider = Mock(MessageBusProvider)
+    def eventBus = Mock(MessageBus)
     RelatedServiceExecutor servicesExecutor = Mock(RelatedServiceExecutor)
 
     def setup() {
@@ -93,9 +92,9 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.start(callWithCause)
 
         then:
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
         1 * servicesExecutor.execute(action, callWithCause) >> allDepsOk
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -125,9 +124,9 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.stop(callWithCause)
 
         then:
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
         1 * servicesExecutor.execute(action, callWithCause) >> true
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -254,8 +253,8 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.reset()
 
         then:
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == transientState && m.cause == Cause.RESET })
-        1 * eventBus.publish({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == Cause.RESET })
+        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -401,7 +400,7 @@ class AbstractServiceTest extends Specification {
         boolean throwResetException = false
 
         @Inject
-        protected TestService(Translate translate, GlobalBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
+        protected TestService(Translate translate, MessageBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
             super(translate, globalBusProvider, servicesExecutor)
         }
 

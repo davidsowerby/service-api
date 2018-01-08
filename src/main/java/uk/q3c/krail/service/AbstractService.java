@@ -14,18 +14,25 @@ package uk.q3c.krail.service;
 
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import net.engio.mbassy.bus.common.PubSubSupport;
 import net.engio.mbassy.listener.Listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.q3c.krail.eventbus.BusMessage;
-import uk.q3c.krail.eventbus.GlobalBusProvider;
+import uk.q3c.krail.eventbus.GlobalMessageBus;
+import uk.q3c.krail.eventbus.MessageBus;
+import uk.q3c.krail.eventbus.MessageBusProvider;
+import uk.q3c.krail.eventbus.SubscribeTo;
 import uk.q3c.krail.i18n.I18NKey;
 import uk.q3c.krail.i18n.Translate;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import static uk.q3c.krail.service.Service.State.*;
+import static uk.q3c.krail.service.Service.State.FAILED;
+import static uk.q3c.krail.service.Service.State.INITIAL;
+import static uk.q3c.krail.service.Service.State.RESETTING;
+import static uk.q3c.krail.service.Service.State.RUNNING;
+import static uk.q3c.krail.service.Service.State.STARTING;
+import static uk.q3c.krail.service.Service.State.STOPPED;
+import static uk.q3c.krail.service.Service.State.STOPPING;
 
 /**
  * The easiest way to provide a {@link Service} is to sub-class either this class or {@link AbstractService}.  For management of dependencies between service,
@@ -41,7 +48,7 @@ import static uk.q3c.krail.service.Service.State.*;
  * <p>
  * This also means that it is not necessary to annotate a sub-class of AbstractService with a {@link Listener}, unless: <ol>
  * <li>you want to specify strong references, </li>
- * <li>you want to subscribe to another event bus as well the {@link GlobalBus}, in which case you will need both {@link Listener} and {@link SubscribeTo}
+ * <li>you want to subscribe to another event bus as well the {@link GlobalMessageBus}, in which case you will need both {@link Listener} and {@link SubscribeTo}
  * annotations</ol>
  * <p>
  *
@@ -57,12 +64,12 @@ public abstract class AbstractService implements Service {
     private RelatedServiceExecutor servicesExecutor;
     private I18NKey descriptionKey;
     private I18NKey nameKey;
-    private PubSubSupport<BusMessage> eventBus;
+    private MessageBus eventBus;
     private int instanceNumber = 0;
     private Cause cause;
 
     @Inject
-    protected AbstractService(Translate translate, GlobalBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
+    protected AbstractService(Translate translate, MessageBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
         super();
         this.translate = translate;
         this.servicesExecutor = servicesExecutor;
@@ -276,7 +283,7 @@ public abstract class AbstractService implements Service {
 
     protected void publishStatusChange(State previousState, Cause cause) {
         log.debug("publishing status change in {}.  Status is now {}", this.getName(), this.getState());
-        eventBus.publish(new ServiceBusMessage(this, previousState, getState(), cause));
+        eventBus.publishSync(new ServiceBusMessage(this, previousState, getState(), cause));
     }
 
 
