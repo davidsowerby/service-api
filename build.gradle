@@ -45,7 +45,7 @@ sourceCompatibility = '1.8'
 
 kaytee {
     version{
-        number = "0.12.0.0"
+        number = "0.13.0.0"
     }
 }
 
@@ -55,8 +55,8 @@ bintray {
 
 dependencies {
     compile 'com.google.inject.extensions:guice-multibindings:' + guiceVersion
-    compile 'uk.q3c.krail:krail-i18n-api:0.15.2.0'
-    compile 'uk.q3c.krail:eventbus-mbassador:0.3.0.0'
+    compile 'uk.q3c.krail:krail-i18n-api:0.15.3.0'
+    compile 'uk.q3c.krail:eventbus-api:0.11.0.0'
     testCompile 'org.spockframework:spock-guice:1.1-groovy-2.4'
     testCompile 'cglib:cglib-nodep:3.2.0' // needed for Spock mocking
     testCompile 'org.mockito:mockito-all:1.10.19'

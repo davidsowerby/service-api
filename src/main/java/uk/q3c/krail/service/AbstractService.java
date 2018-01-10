@@ -14,13 +14,10 @@ package uk.q3c.krail.service;
 
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import net.engio.mbassy.listener.Listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.q3c.krail.eventbus.GlobalMessageBus;
 import uk.q3c.krail.eventbus.MessageBus;
-import uk.q3c.krail.eventbus.MessageBusProvider;
-import uk.q3c.krail.eventbus.SubscribeTo;
 import uk.q3c.krail.i18n.I18NKey;
 import uk.q3c.krail.i18n.Translate;
 
@@ -46,15 +43,12 @@ import static uk.q3c.krail.service.Service.State.STOPPING;
  * All service events are published on the GlobalBus, and all instances of {@link AbstractService} are subscribed to the GlobalBus; this enables the some of
  * the logic of service dependencies - for example, when a service needs to respond when a service it depends on stops.
  * <p>
- * This also means that it is not necessary to annotate a sub-class of AbstractService with a {@link Listener}, unless: <ol>
- * <li>you want to specify strong references, </li>
- * <li>you want to subscribe to another event bus as well the {@link GlobalMessageBus}, in which case you will need both {@link Listener} and {@link SubscribeTo}
- * annotations</ol>
+ * For the MBassador event bus implementation, it is not necessary to annotate a sub-class of AbstractService with a @Listener, unless you want to subscribe to another event bus as well as the default {@link GlobalMessageBus}
  * <p>
  *
  * @author David Sowerby
  */
-@Listener
+
 @ThreadSafe
 public abstract class AbstractService implements Service {
 
@@ -64,17 +58,18 @@ public abstract class AbstractService implements Service {
     private RelatedServiceExecutor servicesExecutor;
     private I18NKey descriptionKey;
     private I18NKey nameKey;
-    private MessageBus eventBus;
+    private MessageBus messageBus;
     private int instanceNumber = 0;
     private Cause cause;
 
     @Inject
-    protected AbstractService(Translate translate, MessageBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
+    protected AbstractService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor) {
         super();
         this.translate = translate;
         this.servicesExecutor = servicesExecutor;
         servicesExecutor.setService(this);
-        eventBus = globalBusProvider.get();
+        this.messageBus = messageBus;
+        messageBus.subscribe(this);
     }
 
     @Override
@@ -283,7 +278,7 @@ public abstract class AbstractService implements Service {
 
     protected void publishStatusChange(State previousState, Cause cause) {
         log.debug("publishing status change in {}.  Status is now {}", this.getName(), this.getState());
-        eventBus.publishSync(new ServiceBusMessage(this, previousState, getState(), cause));
+        messageBus.publishSync(new ServiceBusMessage(this, previousState, getState(), cause));
     }
 
 

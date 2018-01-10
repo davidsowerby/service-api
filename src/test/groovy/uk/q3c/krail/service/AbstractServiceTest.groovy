@@ -16,7 +16,6 @@ package uk.q3c.krail.service
 import com.google.inject.Inject
 import spock.lang.Specification
 import uk.q3c.krail.eventbus.MessageBus
-import uk.q3c.krail.eventbus.MessageBusProvider
 import uk.q3c.krail.i18n.I18NKey
 import uk.q3c.krail.i18n.Translate
 
@@ -34,13 +33,12 @@ class AbstractServiceTest extends Specification {
     TestService service
 
     def servicesModel = Mock(ServiceModel)
-    MessageBusProvider globalBusProvider = Mock(MessageBusProvider)
-    def eventBus = Mock(MessageBus)
+    MessageBus messageBus = Mock(MessageBus)
     RelatedServiceExecutor servicesExecutor = Mock(RelatedServiceExecutor)
 
     def setup() {
-        globalBusProvider.get() >> eventBus
-        service = new TestService(translate, globalBusProvider, servicesExecutor)
+
+        service = new TestService(translate, messageBus, servicesExecutor)
         service.setThrowStartException(false)
         service.setThrowStopException(false)
 
@@ -59,6 +57,7 @@ class AbstractServiceTest extends Specification {
         given:
         translate.from(LabelKey.Authorisation) >> "Authorisation"
         service.setDescriptionKey(LabelKey.Authorisation)
+
         expect:
         service.getDescriptionKey().equals(LabelKey.Authorisation)
         service.getDescription().equals("Authorisation")
@@ -92,9 +91,9 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.start(callWithCause)
 
         then:
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
         1 * servicesExecutor.execute(action, callWithCause) >> allDepsOk
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -124,9 +123,9 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.stop(callWithCause)
 
         then:
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == callWithCause })
         1 * servicesExecutor.execute(action, callWithCause) >> true
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -253,8 +252,8 @@ class AbstractServiceTest extends Specification {
         ServiceStatus status = service.reset()
 
         then:
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == Cause.RESET })
-        1 * eventBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == transientState && m.cause == Cause.RESET })
+        1 * messageBus.publishSync({ ServiceBusMessage m -> m.toState == finalState && m.cause == finalCause })
         service.getState() == finalState
         service.getCause() == finalCause
         status.state == finalState
@@ -400,8 +399,8 @@ class AbstractServiceTest extends Specification {
         boolean throwResetException = false
 
         @Inject
-        protected TestService(Translate translate, MessageBusProvider globalBusProvider, RelatedServiceExecutor servicesExecutor) {
-            super(translate, globalBusProvider, servicesExecutor)
+        protected TestService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor) {
+            super(translate, messageBus, servicesExecutor)
         }
 
         @Override
