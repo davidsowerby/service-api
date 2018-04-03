@@ -13,6 +13,8 @@
 
 package uk.q3c.krail.service;
 
+import java.io.Serializable;
+
 /**
  * Executes changes of state on the service related to a {@link Service} defined by {@link #setService}. Specifically this means calling:<ol>
  * <li>start() on the dependencies of the selected Service</li>
@@ -21,7 +23,7 @@ package uk.q3c.krail.service;
  * <p>
  * Created by David Sowerby on 11 Jan 2016
  */
-public interface RelatedServiceExecutor {
+public interface RelatedServiceExecutor extends Serializable {
 
     /**
      * The service to act on

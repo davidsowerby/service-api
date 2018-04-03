@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import uk.q3c.krail.i18n.I18NKey;
 
 import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 
 /**
  * A ky object to uniquely identify a {@link Service} class without needing to use the Class itself
@@ -24,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
  * Created by David Sowerby on 24/10/15.
  */
 @Immutable
-public class ServiceKey {
+public class ServiceKey implements Serializable {
 
     private final I18NKey key;
 

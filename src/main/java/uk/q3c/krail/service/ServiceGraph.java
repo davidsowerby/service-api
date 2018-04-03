@@ -2,6 +2,7 @@ package uk.q3c.krail.service;
 
 import com.google.common.collect.ImmutableList;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ import java.util.Optional;
  * <p>
  * Created by David Sowerby on 03/12/15.
  */
-public interface ServiceGraph<T> {
+public interface ServiceGraph<T> extends Serializable {
 
     /**
      * Returns a list of dependencies for {@code dependant} which are of the {@link Dependency.Type} defined by {@code selection}

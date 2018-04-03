@@ -16,6 +16,7 @@ package uk.q3c.krail.service;
 import com.google.common.collect.ImmutableList;
 import uk.q3c.util.dag.CycleDetectedException;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
  * Created by David Sowerby on 24/10/15.
  */
 
-public interface ServiceModel {
+public interface ServiceModel extends Serializable {
 
 
     /**

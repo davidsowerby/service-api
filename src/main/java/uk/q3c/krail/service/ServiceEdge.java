@@ -12,6 +12,7 @@
 package uk.q3c.krail.service;
 
 import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 
 /**
  * Graph edge describing the relationship between service.  An instance of this edge describes a dependency, and is
@@ -20,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
  * Created by David Sowerby on 25/10/15.
  */
 @Immutable
-public class ServiceEdge {
+public class ServiceEdge implements Serializable {
 
     private final Dependency.Type type;
 

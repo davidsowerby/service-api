@@ -20,8 +20,11 @@ import uk.q3c.krail.eventbus.GlobalMessageBus;
 import uk.q3c.krail.eventbus.MessageBus;
 import uk.q3c.krail.i18n.I18NKey;
 import uk.q3c.krail.i18n.Translate;
+import uk.q3c.util.guice.SerializationSupport;
 
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 import static uk.q3c.krail.service.Service.State.FAILED;
 import static uk.q3c.krail.service.Service.State.INITIAL;
@@ -53,20 +56,22 @@ import static uk.q3c.krail.service.Service.State.STOPPING;
 public abstract class AbstractService implements Service {
 
     private static Logger log = LoggerFactory.getLogger(AbstractService.class);
-    private final Translate translate;
+    private final transient Translate translate;
     protected State state = INITIAL;
-    private RelatedServiceExecutor servicesExecutor;
+    private transient RelatedServiceExecutor servicesExecutor; // TODO
+    private SerializationSupport serializationSupport;
     private I18NKey descriptionKey;
     private I18NKey nameKey;
-    private MessageBus messageBus;
+    private transient MessageBus messageBus;
     private int instanceNumber = 0;
     private Cause cause;
 
     @Inject
-    protected AbstractService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor) {
+    protected AbstractService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor, SerializationSupport serializationSupport) {
         super();
         this.translate = translate;
         this.servicesExecutor = servicesExecutor;
+        this.serializationSupport = serializationSupport;
         servicesExecutor.setService(this);
         this.messageBus = messageBus;
         messageBus.subscribe(this);
@@ -281,5 +286,10 @@ public abstract class AbstractService implements Service {
         messageBus.publishSync(new ServiceBusMessage(this, previousState, getState(), cause));
     }
 
+    private void readObject(ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
+        inputStream.defaultReadObject();
+        serializationSupport.deserialize(this);
+        messageBus.subscribe(this);
+    }
 
 }

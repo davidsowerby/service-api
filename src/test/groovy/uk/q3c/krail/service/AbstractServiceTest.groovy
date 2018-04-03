@@ -18,6 +18,7 @@ import spock.lang.Specification
 import uk.q3c.krail.eventbus.MessageBus
 import uk.q3c.krail.i18n.I18NKey
 import uk.q3c.krail.i18n.Translate
+import uk.q3c.util.guice.SerializationSupport
 
 import static uk.q3c.krail.service.RelatedServiceExecutor.*
 import static uk.q3c.krail.service.Service.*
@@ -29,6 +30,7 @@ import static uk.q3c.krail.service.Service.*
 class AbstractServiceTest extends Specification {
 
     def translate = Mock(Translate)
+    SerializationSupport serializationSupport = Mock(SerializationSupport)
 
     TestService service
 
@@ -38,7 +40,7 @@ class AbstractServiceTest extends Specification {
 
     def setup() {
 
-        service = new TestService(translate, messageBus, servicesExecutor)
+        service = new TestService(translate, messageBus, servicesExecutor, serializationSupport)
         service.setThrowStartException(false)
         service.setThrowStopException(false)
 
@@ -399,8 +401,8 @@ class AbstractServiceTest extends Specification {
         boolean throwResetException = false
 
         @Inject
-        protected TestService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor) {
-            super(translate, messageBus, servicesExecutor)
+        protected TestService(Translate translate, MessageBus messageBus, RelatedServiceExecutor servicesExecutor, SerializationSupport serializationSupport) {
+            super(translate, messageBus, servicesExecutor, serializationSupport)
         }
 
         @Override

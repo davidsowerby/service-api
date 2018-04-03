@@ -11,8 +11,8 @@
  *
  */
 buildscript {
-    ext.kotlin_version = '1.1.4-3'
-    ext.kaytee_plugin_version = "0.18.10.0"
+    ext.kotlin_version = '1.2.31'
+    ext.kaytee_plugin_version = "0.20.1.0"
     repositories {
         jcenter()
     }
@@ -45,7 +45,7 @@ sourceCompatibility = '1.8'
 
 kaytee {
     version{
-        number = "0.13.0.0"
+        number = "0.14.0.0"
     }
 }
 
@@ -54,9 +54,7 @@ bintray {
 }
 
 dependencies {
-    compile 'com.google.inject.extensions:guice-multibindings:' + guiceVersion
-    compile 'uk.q3c.krail:krail-i18n-api:0.15.3.0'
-    compile 'uk.q3c.krail:eventbus-api:0.11.0.0'
+    compile 'uk.q3c.krail:krail-i18n-api:0.15.6.0'
     testCompile 'org.spockframework:spock-guice:1.1-groovy-2.4'
     testCompile 'cglib:cglib-nodep:3.2.0' // needed for Spock mocking
     testCompile 'org.mockito:mockito-all:1.10.19'
